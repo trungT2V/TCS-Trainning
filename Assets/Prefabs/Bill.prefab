@@ -320,6 +320,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1138158715433224013}
+  - component: {fileID: 5440127358354649577}
   m_Layer: 0
   m_Name: Bill
   m_TagString: Untagged
@@ -343,6 +344,20 @@ Transform:
   - {fileID: 666005140572638624}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5440127358354649577
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7398492306849508779}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c29e3b40b80d211449b30d2980d8b324, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shipper: {fileID: 2508976995223653767}
+  cog: {fileID: 1206544768012243393}
 --- !u!1 &8938363338600856601
 GameObject:
   m_ObjectHideFlags: 0

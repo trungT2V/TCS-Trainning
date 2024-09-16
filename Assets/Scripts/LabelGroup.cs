@@ -1,11 +1,13 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class LabelGroup : MonoBehaviour
 {
     [SerializeField] private LabelElement[] elements;
+    [SerializeField] private GameObject bill;
 
     private LabelElement currentLabelSelected;
 
@@ -17,15 +19,24 @@ public class LabelGroup : MonoBehaviour
         }
     }
 
-    public void SelectLabel(LabelElement label)
+    public void SelectLabel(LabelElement label, bool billConfirm = false)
     {
         if(currentLabelSelected != null)
         {
             currentLabelSelected.Selected(false);
         }
 
-        currentLabelSelected = label;
-        currentLabelSelected.Selected(true);
+        if(label.labelType == E_LABEL.BILL && billConfirm == false)
+        {
+            bill.SetActive(true);
+            currentLabelSelected = null;
+            CharacterMovementWithHeadBobbing.isActive = false;
+        }
+        else
+        {
+            currentLabelSelected = label;
+            currentLabelSelected.Selected(true);
+        }
     }
 
     public E_LABEL GetCurrentSelectedLabel()

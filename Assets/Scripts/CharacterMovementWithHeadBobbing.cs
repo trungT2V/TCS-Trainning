@@ -3,6 +3,8 @@
 [RequireComponent(typeof(CharacterController))]
 public class CharacterMovementWithHeadBobbing : MonoBehaviour
 {
+    public static bool isActive = true;
+
     public float moveSpeed = 5f;
     public float gravity = -9.81f;
     public float jumpHeight = 2f;
@@ -25,6 +27,9 @@ public class CharacterMovementWithHeadBobbing : MonoBehaviour
 
     void Update()
     {
+        if (!isActive)
+            return;
+
         // Di chuyển nhân vật
         float moveX = Input.GetAxis("Horizontal");
         float moveZ = Input.GetAxis("Vertical");

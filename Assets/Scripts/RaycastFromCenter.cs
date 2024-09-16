@@ -1,6 +1,6 @@
 ﻿using System;
+using Unity.VisualScripting;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
 
 public enum E_Carry
 {
@@ -15,11 +15,11 @@ public class RaycastFromCenter : MonoBehaviour
     public float rayDistance = 100f;
     public LayerMask boxLayer;
     public LayerMask tableLayer;
+    public Transform afterlableParent;
     public Transform atackTransform;
     public MouseLook mouseLook;
 
     public BaseInteractiveObject lastInteractive;
-    private bool isHolding;
     private E_Carry E_Carry;
 
     [Header("Rotate Box")]
@@ -28,10 +28,12 @@ public class RaycastFromCenter : MonoBehaviour
     private float mouseX;
     private float mouseY;
 
+    [SerializeField] GameObject labelPanel;
     public LabelGroup labelGroup;
     [SerializeField] GameObject labelAxitPrefab;
     [SerializeField] GameObject labelFirePrefab;
     [SerializeField] GameObject labelArowPrefab;
+    [SerializeField] GameObject labelBillPrefab;
     private GameObject currentLabel;
     private E_LABEL currentLabelType;
 
@@ -45,6 +47,31 @@ public class RaycastFromCenter : MonoBehaviour
             case E_Carry.BOX:
                 DoRaycastBox();
                 break;
+            case E_Carry.LABEL:
+                DoRaycastLabel();
+                break;
+        }
+    }
+
+    private void DoRaycastLabel()
+    {
+        Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
+        RaycastHit hit;
+
+        if (Physics.Raycast(ray, out hit, rayDistance, tableLayer))
+        {
+            afterlableParent.GetChild(0).position = hit.point + (0.128f * hit.normal);
+            afterlableParent.GetChild(0).up = hit.normal;
+
+            if (Input.GetMouseButtonDown(0))
+            {
+                afterlableParent.GetChild(0).SetParent(null);
+                E_Carry = E_Carry.EMPTY;
+            }
+        }
+        else
+        {
+            afterlableParent.GetChild(0).localPosition = Vector3.zero;
         }
     }
 
@@ -144,10 +171,10 @@ public class RaycastFromCenter : MonoBehaviour
             if (lastInteractive == null)
                 return;
 
-            isHolding = true;
             lastInteractive.Interactive(atackTransform);
             mouseLook.Active(false);
             E_Carry = E_Carry.BOX;
+            labelPanel.SetActive(true);
         }
     }
 
@@ -166,67 +193,19 @@ public class RaycastFromCenter : MonoBehaviour
             case E_LABEL.ARROW:
                 result = Instantiate(labelArowPrefab);
                 break;
+            case E_LABEL.BILL:
+                result = Instantiate(labelBillPrefab);
+                break;
         }
 
         return result;
     }
 
-    void FireRaycastFromCenter()
+    public void BTN_LabelConfirm()
     {
-        if (isHolding)
-        {
-            Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, rayDistance, tableLayer))
-            {
-                lastInteractive.transform.position = hit.point;
-            }
-            else
-            {
-                lastInteractive.transform.localPosition = Vector3.zero;
-            }
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                lastInteractive.StopInteractive();
-                isHolding = false;
-            }
-
-        }
-        else
-        {
-            Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
-            RaycastHit hit;
-
-            if (Physics.Raycast(ray, out hit, rayDistance, boxLayer))
-            {
-                BaseInteractiveObject baseInteractive = hit.transform.GetComponent<BaseInteractiveObject>();
-
-                if (baseInteractive != null && lastInteractive != baseInteractive)
-                {
-                    if (lastInteractive != null)
-                        lastInteractive.SetActiveOutlight(false);
-
-                    lastInteractive = baseInteractive;
-                    lastInteractive.SetActiveOutlight(true);
-                }
-            }
-            else
-            {
-                if (lastInteractive != null)
-                    lastInteractive.SetActiveOutlight(false);
-                lastInteractive = null;
-            }
-
-            if (Input.GetMouseButtonDown(0))
-            {
-                if (lastInteractive == null)
-                    return;
-
-                isHolding = true;
-                lastInteractive.Interactive(atackTransform);
-            }
-        }
+        labelPanel.SetActive(false);
+        atackTransform.GetChild(0).SetParent(afterlableParent, false);
+        mouseLook.Active(true);
+        E_Carry = E_Carry.LABEL;
     }
 }
