@@ -60,7 +60,7 @@ public class RaycastFromCenter : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, rayDistance, tableLayer))
         {
-            afterlableParent.GetChild(0).position = hit.point + (0.128f * hit.normal);
+            afterlableParent.GetChild(0).position = hit.point + (0.27f * hit.normal);
             afterlableParent.GetChild(0).up = hit.normal;
 
             if (Input.GetMouseButtonDown(0))
@@ -106,6 +106,7 @@ public class RaycastFromCenter : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     currentLabel.transform.SetParent(hit.transform, true);
+                    labelGroup.ResetToNone();
                     currentLabel = null;
                 }
             }

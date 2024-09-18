@@ -46,4 +46,13 @@ public class LabelGroup : MonoBehaviour
 
         return currentLabelSelected.labelType;
     }
+
+    public void ResetToNone()
+    {
+        if (currentLabelSelected != null)
+        {
+            currentLabelSelected.Selected(false);
+            currentLabelSelected = null;
+        }
+    }
 }
