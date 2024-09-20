@@ -1,19 +1,40 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.UIElements;
 
 public class LabelGroup : MonoBehaviour
 {
-    [SerializeField] private LabelElement[] elements;
-    [SerializeField] private GameObject bill;
+    public Action<GameObject> OnSelectedLabel;
+    public Action OnDeleteLabel;
+    public Action<bool> OnTakeNote;
+    public Action<string> OnSender;
+    public Action<string> OnReceiver;
+    public Action<string> OnNote;
 
-    private LabelElement currentLabelSelected;
+    [SerializeField] private LabelElement[] elements;
+
+    [Header("Reference")]
+    [SerializeField] private GameObject billPanel;
+    [SerializeField] private GameObject notePanel;
+    [SerializeField] GameObject DGPanel;
+    [SerializeField] GameObject HandlingPanel;
+
+    [Space]
+    [SerializeField] GameObject labelAxitPrefab;
+    [SerializeField] GameObject labelFirePrefab;
+    [SerializeField] GameObject labelArowPrefab;
+    [SerializeField] GameObject labelBillPrefab;
+
+    private GameObject currentLabel;
 
     private void Start()
     {
-        foreach(LabelElement e in elements)
+        foreach (LabelElement e in elements)
         {
             e.Setup(this);
         }
@@ -21,38 +42,130 @@ public class LabelGroup : MonoBehaviour
 
     public void SelectLabel(LabelElement label, bool billConfirm = false)
     {
-        if(currentLabelSelected != null)
+        //if(currentLabelSelected != null)
+        //{
+        //    currentLabelSelected.Selected(false);
+        //}
+
+        //if(label.labelType == E_LABEL.BILL && billConfirm == false)
+        //{
+        //    bill.SetActive(true);
+        //    currentLabelSelected = null;
+        //    CharacterMovementWithHeadBobbing.isActive = false;
+        //}
+        //else
+        //{
+        //    currentLabelSelected = label;
+        //    currentLabelSelected.Selected(true);
+        //}
+
+        if (currentLabel)
         {
-            currentLabelSelected.Selected(false);
+            OnDeleteLabel?.Invoke();
+            Destroy(currentLabel);
+            currentLabel = null;
         }
 
-        if(label.labelType == E_LABEL.BILL && billConfirm == false)
+        currentLabel = InstanceLabel(label.labelType);
+        OnSelectedLabel?.Invoke(currentLabel);
+    }
+
+    private GameObject InstanceLabel(E_LABEL label)
+    {
+        GameObject result = null;
+
+        switch (label)
         {
-            bill.SetActive(true);
-            currentLabelSelected = null;
-            CharacterMovementWithHeadBobbing.isActive = false;
+            case E_LABEL.FIRE:
+                result = Instantiate(labelFirePrefab);
+                break;
+            case E_LABEL.AXIT:
+                result = Instantiate(labelAxitPrefab);
+                break;
+            case E_LABEL.ARROW:
+                result = Instantiate(labelArowPrefab);
+                break;
+            case E_LABEL.BILL:
+                result = Instantiate(labelBillPrefab);
+                break;
         }
-        else
+
+        return result;
+    }
+
+    public void ClearLabel()
+    {
+        if (currentLabel)
         {
-            currentLabelSelected = label;
-            currentLabelSelected.Selected(true);
+            OnDeleteLabel?.Invoke();
+            Destroy(currentLabel);
+            currentLabel = null;
         }
     }
 
-    public E_LABEL GetCurrentSelectedLabel()
+    public void StickLabel()
     {
-        if (currentLabelSelected == null)
-            return E_LABEL.NONE;
-
-        return currentLabelSelected.labelType;
+        currentLabel = null;
     }
 
-    public void ResetToNone()
+    public void BTN_DG()
     {
-        if (currentLabelSelected != null)
-        {
-            currentLabelSelected.Selected(false);
-            currentLabelSelected = null;
-        }
+        DGPanel.SetActive(true);
+        HandlingPanel.SetActive(false);
+        billPanel.SetActive(false);
+        notePanel.SetActive(false);
+        BTN_DoneTakeNote();
+    }
+
+    public void BTN_Handling()
+    {
+        DGPanel.SetActive(false);
+        HandlingPanel.SetActive(true);
+        billPanel.SetActive(false);
+        notePanel.SetActive(false);
+        BTN_DoneTakeNote();
+    }
+
+    public void IP_Sender(string value)
+    {
+        OnSender?.Invoke(value);
+    }
+
+    public void IP_Receiver(string value)
+    {
+        OnReceiver?.Invoke(value);
+    }
+
+    public void IP_Note(string value)
+    {
+        OnNote?.Invoke(value);
+    }
+
+    public void BTN_StartTakeNote()
+    {
+        CharacterMovementWithHeadBobbing.isActive = false;
+        billPanel.SetActive(false);
+        notePanel.SetActive(true);
+        HandlingPanel.SetActive(false);
+        DGPanel.SetActive(false);
+
+        OnTakeNote?.Invoke(true);
+    }
+
+    public void BTN_DoneTakeNote()
+    {
+        CharacterMovementWithHeadBobbing.isActive = true;
+        notePanel.SetActive(false);
+
+        OnTakeNote?.Invoke(false);
+    }
+
+    internal void EnableBillFill()
+    {
+        DGPanel.SetActive(false);
+        HandlingPanel.SetActive(false);
+        billPanel.SetActive(true);
+        notePanel.SetActive(false);
+
     }
 }

@@ -6,10 +6,7 @@ using UnityEngine.UI;
 
 public class BillFill : MonoBehaviour
 {
-    [SerializeField] TMP_InputField inputFieldShipper;
-    [SerializeField] TMP_InputField inputFieldCogatee;
-    [SerializeField] LabelGroup labelGroup;
-    [SerializeField] LabelElement labelBill;
+    [SerializeField] BillCheat billCheat; 
 
     public static string shipperText;
     public static string cogateeText;
@@ -21,12 +18,6 @@ public class BillFill : MonoBehaviour
     public static string quaranty;
     public static string packinginst;
     public static string author;
-
-    private void OnEnable()
-    {
-        inputFieldShipper.text = "";
-        inputFieldCogatee.text = "";
-    }
 
     public void ShipperText(string text)
     {
@@ -80,7 +71,6 @@ public class BillFill : MonoBehaviour
 
     public void Comfirm()
     {
-        labelGroup.SelectLabel(labelBill, true);
         this.gameObject.SetActive(false);
         CharacterMovementWithHeadBobbing.isActive = true;
     }

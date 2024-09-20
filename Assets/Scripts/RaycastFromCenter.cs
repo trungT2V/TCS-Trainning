@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DG.Tweening;
+using System;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -19,6 +20,7 @@ public class RaycastFromCenter : MonoBehaviour
     public Transform atackTransform;
     public MouseLook mouseLook;
 
+
     public BaseInteractiveObject lastInteractive;
     private E_Carry E_Carry;
 
@@ -28,24 +30,72 @@ public class RaycastFromCenter : MonoBehaviour
     private float mouseX;
     private float mouseY;
 
-    [SerializeField] GameObject labelPanel;
     public LabelGroup labelGroup;
-    [SerializeField] GameObject labelAxitPrefab;
-    [SerializeField] GameObject labelFirePrefab;
-    [SerializeField] GameObject labelArowPrefab;
-    [SerializeField] GameObject labelBillPrefab;
+
+    [SerializeField] GameObject labelPanel;
+
+    private Box currentBox;
     private GameObject currentLabel;
-    private E_LABEL currentLabelType;
+    private bool lockRotate;
+
+    private void Start()
+    {
+        labelGroup.OnSelectedLabel += OnSelectedLabelHandler;
+        labelGroup.OnDeleteLabel += OnDeleteLabelHandler;
+        labelGroup.OnSender += OnSenderHanlder;
+        labelGroup.OnReceiver += OnReceiverHanlder;
+        labelGroup.OnNote += OnNoteHandler;
+        labelGroup.OnTakeNote += OnTakeNoteHandler;
+    }
+
+    private void OnTakeNoteHandler(bool status)
+    {
+        if (status)
+        {
+            lockRotate = true;
+            atackTransform.localRotation = Quaternion.Euler(0f, -90f, 90f);
+        }
+        else
+        {
+            lockRotate = false;
+        }
+        
+    }
+
+    private void OnReceiverHanlder(string obj)
+    {
+        currentBox?.SetReceiver(obj);
+    }
+
+    private void OnNoteHandler(string obj)
+    {
+        currentBox?.SetNote(obj);
+    }
+
+    private void OnSenderHanlder(string obj)
+    {
+        currentBox?.SetSender(obj);
+    }
+
+    private void OnDeleteLabelHandler()
+    {
+        currentLabel = null;
+    }
+
+    private void OnSelectedLabelHandler(GameObject labelGO)
+    {
+        currentLabel = labelGO;
+    }
 
     void Update()
     {
         switch (E_Carry)
         {
             case E_Carry.EMPTY:
-                DoRaycastEmpty();
+                HandEmpty();
                 break;
             case E_Carry.BOX:
-                DoRaycastBox();
+                HandHoldingBoxToLabel();
                 break;
             case E_Carry.LABEL:
                 DoRaycastLabel();
@@ -60,8 +110,18 @@ public class RaycastFromCenter : MonoBehaviour
 
         if (Physics.Raycast(ray, out hit, rayDistance, tableLayer))
         {
-            afterlableParent.GetChild(0).position = hit.point + (0.27f * hit.normal);
-            afterlableParent.GetChild(0).up = hit.normal;
+            if(currentBox != null)
+            {
+                afterlableParent.GetChild(0).position = hit.point + (0.27f * hit.normal);
+                afterlableParent.GetChild(0).up = hit.normal;
+            }
+            else
+            {
+                afterlableParent.GetChild(0).position = hit.point + (0.01f * hit.normal);
+                afterlableParent.GetChild(0).up = hit.normal;
+            }
+
+           
 
             if (Input.GetMouseButtonDown(0))
             {
@@ -75,26 +135,10 @@ public class RaycastFromCenter : MonoBehaviour
         }
     }
 
-    private void DoRaycastBox()
+    private void HandHoldingBoxToLabel()
     {
-        E_LABEL newLabel = labelGroup.GetCurrentSelectedLabel();
-        if (newLabel != E_LABEL.NONE)
+        if (currentLabel != null)
         {
-            if (currentLabel == null)
-            {
-                currentLabel = GetLabel(labelGroup.GetCurrentSelectedLabel());
-            }
-            else
-            {
-                if (currentLabelType != newLabel)
-                {
-                    Destroy(currentLabel);
-                    currentLabel = null;
-                    currentLabelType = newLabel;
-                    return;
-                }
-            }
-
             Vector3 mousePosition = Input.mousePosition;
             Ray ray = playerCamera.ScreenPointToRay(mousePosition);
             RaycastHit hit;
@@ -106,22 +150,20 @@ public class RaycastFromCenter : MonoBehaviour
                 if (Input.GetMouseButtonDown(0))
                 {
                     currentLabel.transform.SetParent(hit.transform, true);
-                    labelGroup.ResetToNone();
+                    labelGroup.StickLabel();
                     currentLabel = null;
                 }
             }
             else
             {
                 currentLabel.transform.position = ray.origin + (2 * ray.direction);
+                currentLabel.transform.forward = -playerCamera.transform.forward;
             }
         }
         else
         {
-            if (currentLabel != null)
-            {
-                Destroy(currentLabel);
-                currentLabel = null;
-            }
+            if (lockRotate)
+                return;
 
             if (Input.GetMouseButton(0))
             {
@@ -139,10 +181,110 @@ public class RaycastFromCenter : MonoBehaviour
                 atackTransform.Rotate(Vector3.up, -mouseX, Space.World);  // Xoay quanh trục Y (ngang)
                 atackTransform.Rotate(transform.right, mouseY, Space.World); // Xoay quanh trục X (dọc)
             }
+            else if (Input.GetMouseButtonUp(0))
+            {
+                float lerpToAngleY = 0, minAngleY = 500;
+                float angleY = atackTransform.localEulerAngles.y;
+
+                float lerpToAngleX = 0, minAngleX = 500;
+                float angleX = atackTransform.localEulerAngles.x;
+
+                float lerpToAngleZ = 0, minAngleZ = 500;
+                float angleZ = atackTransform.eulerAngles.z;
+
+                if (MathF.Abs(angleY - 0) < minAngleY)
+                {
+                    lerpToAngleY = 0;
+                    minAngleY = MathF.Abs(angleY - 0);
+                }
+
+                if (MathF.Abs(angleY - 90) < minAngleY)
+                {
+                    lerpToAngleY = 90;
+                    minAngleY = MathF.Abs(angleY - 90);
+                }
+
+                if (MathF.Abs(angleY - 180) < minAngleY)
+                {
+                    lerpToAngleY = 180;
+                    minAngleY = MathF.Abs(angleY - 180);
+                }
+
+                if (MathF.Abs(angleY - 270) < minAngleY)
+                {
+                    lerpToAngleY = 270;
+                    minAngleY = MathF.Abs(angleY - 270);
+                }
+
+                if (MathF.Abs(angleY - 360) < minAngleY)
+                {
+                    lerpToAngleY = 0;
+                }
+
+                if (MathF.Abs(angleX - 0) < minAngleX)
+                {
+                    lerpToAngleX = 0;
+                    minAngleX = MathF.Abs(angleX - 0);
+                }
+
+                if (MathF.Abs(angleX - 90) < minAngleX)
+                {
+                    lerpToAngleX = 90;
+                    minAngleX = MathF.Abs(angleX - 90);
+                }
+
+                if (MathF.Abs(angleX - 180) < minAngleX)
+                {
+                    lerpToAngleX = 180;
+                    minAngleX = MathF.Abs(angleX - 180);
+                }
+
+                if (MathF.Abs(angleX - 270) < minAngleX)
+                {
+                    lerpToAngleX = 270;
+                    minAngleX = MathF.Abs(angleX - 270);
+                }
+
+                if (MathF.Abs(angleX - 360) < minAngleX)
+                {
+                    lerpToAngleX = 0;
+                }
+
+                if (MathF.Abs(angleZ - 0) < minAngleZ)
+                {
+                    lerpToAngleZ = 0;
+                    minAngleZ = MathF.Abs(angleZ - 0);
+                }
+
+                if (MathF.Abs(angleZ - 90) < minAngleZ)
+                {
+                    lerpToAngleZ = 90;
+                    minAngleZ = MathF.Abs(angleZ - 90);
+                }
+
+                if (MathF.Abs(angleZ - 180) < minAngleZ)
+                {
+                    lerpToAngleZ = 180;
+                    minAngleZ = MathF.Abs(angleZ - 180);
+                }
+
+                if (MathF.Abs(angleZ - 270) < minAngleZ)
+                {
+                    lerpToAngleZ = 270;
+                    minAngleZ = MathF.Abs(angleZ - 270);
+                }
+
+                if (MathF.Abs(angleZ - 360) < minAngleZ)
+                {
+                    lerpToAngleZ = 0;
+                }
+
+                atackTransform.DOLocalRotate(new Vector3(lerpToAngleX, lerpToAngleY, lerpToAngleZ), .2f);
+            }
         }
     }
 
-    private void DoRaycastEmpty()
+    private void HandEmpty()
     {
         Ray ray = playerCamera.ViewportPointToRay(new Vector3(0.5f, 0.5f, 0f));
         RaycastHit hit;
@@ -172,34 +314,21 @@ public class RaycastFromCenter : MonoBehaviour
             if (lastInteractive == null)
                 return;
 
-            lastInteractive.Interactive(atackTransform);
-            mouseLook.Active(false);
+            try
+            {
+                currentBox = (Box)lastInteractive;
+                labelPanel.SetActive(true);
+            }
+            catch
+            {
+                CharacterMovementWithHeadBobbing.isActive = false;
+                labelGroup.EnableBillFill();
+            }
+
             E_Carry = E_Carry.BOX;
-            labelPanel.SetActive(true);
+            mouseLook.Active(false);
+            lastInteractive.Interactive(atackTransform);
         }
-    }
-
-    private GameObject GetLabel(E_LABEL label)
-    {
-        GameObject result = null;
-
-        switch (label)
-        {
-            case E_LABEL.FIRE:
-                result = Instantiate(labelFirePrefab);
-                break;
-            case E_LABEL.AXIT:
-                result = Instantiate(labelAxitPrefab);
-                break;
-            case E_LABEL.ARROW:
-                result = Instantiate(labelArowPrefab);
-                break;
-            case E_LABEL.BILL:
-                result = Instantiate(labelBillPrefab);
-                break;
-        }
-
-        return result;
     }
 
     public void BTN_LabelConfirm()
@@ -208,5 +337,6 @@ public class RaycastFromCenter : MonoBehaviour
         atackTransform.GetChild(0).SetParent(afterlableParent, false);
         mouseLook.Active(true);
         E_Carry = E_Carry.LABEL;
+        atackTransform.localRotation = Quaternion.Euler(0, 0, 0);
     }
 }
