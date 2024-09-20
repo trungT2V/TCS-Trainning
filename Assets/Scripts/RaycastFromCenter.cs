@@ -20,7 +20,6 @@ public class RaycastFromCenter : MonoBehaviour
     public Transform atackTransform;
     public MouseLook mouseLook;
 
-
     public BaseInteractiveObject lastInteractive;
     private E_Carry E_Carry;
 

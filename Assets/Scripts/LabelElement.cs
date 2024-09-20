@@ -11,7 +11,7 @@ public class LabelElement : MonoBehaviour
 
     public E_LABEL labelType;
 
-    private LabelGroup labelGroup;
+    private IGroup labelGroup;
 
     private void Awake()
     {
@@ -21,9 +21,9 @@ public class LabelElement : MonoBehaviour
         });
     }
 
-    public void Setup(LabelGroup labelGroup)
+    public void Setup(IGroup labelGroup)
     {
-        this.labelGroup = labelGroup;   
+        this.labelGroup = labelGroup;
     }
 
 

@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.UIElements;
 
-public class LabelGroup : MonoBehaviour
+public class LabelGroup : MonoBehaviour, IGroup
 {
     public Action<GameObject> OnSelectedLabel;
     public Action OnDeleteLabel;
@@ -23,12 +23,6 @@ public class LabelGroup : MonoBehaviour
     [SerializeField] private GameObject notePanel;
     [SerializeField] GameObject DGPanel;
     [SerializeField] GameObject HandlingPanel;
-
-    [Space]
-    [SerializeField] GameObject labelAxitPrefab;
-    [SerializeField] GameObject labelFirePrefab;
-    [SerializeField] GameObject labelArowPrefab;
-    [SerializeField] GameObject labelBillPrefab;
 
     private GameObject currentLabel;
 
@@ -72,24 +66,7 @@ public class LabelGroup : MonoBehaviour
 
     private GameObject InstanceLabel(E_LABEL label)
     {
-        GameObject result = null;
-
-        switch (label)
-        {
-            case E_LABEL.FIRE:
-                result = Instantiate(labelFirePrefab);
-                break;
-            case E_LABEL.AXIT:
-                result = Instantiate(labelAxitPrefab);
-                break;
-            case E_LABEL.ARROW:
-                result = Instantiate(labelArowPrefab);
-                break;
-            case E_LABEL.BILL:
-                result = Instantiate(labelBillPrefab);
-                break;
-        }
-
+        GameObject result = Instantiate(Resources.Load("labels/" + label.ToString()) as GameObject);
         return result;
     }
 
