@@ -47,6 +47,16 @@ public class MyCustomWindow : EditorWindow
         {
             CreateUI();
         }
+
+        if(GUILayout.Button("Create UI"))
+        {
+            SetMaterial();
+        }
+    }
+
+    private void SetMaterial()
+    {
+        
     }
 
     private void CreateUI()

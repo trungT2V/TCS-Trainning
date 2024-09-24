@@ -2,6 +2,7 @@
 using System;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public enum E_Carry
 {
@@ -169,6 +170,9 @@ public class RaycastFromCenter : MonoBehaviour
                 // Lấy giá trị di chuyển của chuột theo trục X và Y
                 mouseX = Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime;
                 mouseY = Input.GetAxis("Mouse Y") * rotationSpeed * Time.deltaTime;
+
+                if (EventSystem.current.IsPointerOverGameObject())
+                    return;
 
                 // Đảo ngược trục Y nếu cần
                 if (invertY)
