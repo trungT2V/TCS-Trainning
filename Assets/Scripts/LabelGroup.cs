@@ -64,7 +64,7 @@ public class LabelGroup : MonoBehaviour, IGroup
         OnSelectedLabel?.Invoke(currentLabel);
     }
 
-    private GameObject InstanceLabel(E_LABEL label)
+    private GameObject InstanceLabel(int label)
     {
         GameObject result = Instantiate(Resources.Load("labels/" + label.ToString()) as GameObject);
         return result;

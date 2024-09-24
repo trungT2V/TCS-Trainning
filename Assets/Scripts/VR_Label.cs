@@ -42,7 +42,7 @@ public class VR_Label : MonoBehaviour, IGroup
             currentLabel = null;
         }
 
-        currentLabel = InstanceLabel(label.labelType);
+        // currentLabel = InstanceLabel(label.labelType);
         hand.SetLabel(currentLabel.transform);
     }
 

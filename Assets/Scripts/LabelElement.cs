@@ -9,7 +9,7 @@ public class LabelElement : MonoBehaviour
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color normalColor = Color.white;
 
-    public E_LABEL labelType;
+    public int labelType;
 
     private IGroup labelGroup;
 
@@ -26,7 +26,6 @@ public class LabelElement : MonoBehaviour
         this.labelGroup = labelGroup;
     }
 
-
     public void Selected(bool isSelected)
     {
         if (isSelected)
@@ -37,5 +36,11 @@ public class LabelElement : MonoBehaviour
         {
             image.color = normalColor;
         }
+    }
+
+    private void OnEnable()
+    {
+        Sprite sprite = Resources.Load<Sprite>("Sprites/" + labelType);
+        transform.GetChild(0).GetComponent<Image>().sprite = sprite;
     }
 }
